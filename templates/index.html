@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AuraStyle — AI Fashion Discovery</title>
+  <meta name="description" content="Discover fashion using text, image, and voice with AI-powered semantic search." />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+
+<!-- ── Navigation ──────────────────────────────────────────── -->
+<nav id="navbar" role="navigation" aria-label="Main navigation">
+  <a href="/" class="nav-logo" aria-label="AuraStyle Home">
+    <div class="nav-logo-icon" aria-hidden="true">✦</div>
+    <span class="nav-logo-text">Aura<span>Style</span></span>
+  </a>
+
+  <ul class="nav-links" role="list">
+    <li><a href="#hero" class="active">Home</a></li>
+    <li><a href="#all-products-section">Catalogue</a></li>
+    <li><a href="#results-section">Search</a></li>
+  </ul>
+
+  <div class="nav-actions">
+    <button id="theme-toggle" aria-label="Toggle theme">🌙</button>
+    <button class="nav-hamburger" aria-label="Open menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ── Loading Overlay ─────────────────────────────────────── -->
+<div id="loading-overlay" role="status" aria-live="polite">
+  <div class="spinner" aria-hidden="true"></div>
+  <span class="loading-text">Finding your style…</span>
+</div>
+
+<!-- ── Toast Container ─────────────────────────────────────── -->
+<div id="toast-container" aria-live="assertive" role="alert"></div>
+
+<!-- ── Hero ────────────────────────────────────────────────── -->
+<section id="hero" aria-labelledby="hero-title">
+  <div class="hero-bg" aria-hidden="true"></div>
+
+  <div class="hero-tag">
+    <span class="dot" aria-hidden="true"></span>
+    <span class="eyebrow">AI-Powered Search</span>
+  </div>
+
+  <h1 class="hero-title" id="hero-title">
+    Discover Fashion<br><em>with AI</em>
+  </h1>
+  <p class="hero-subtitle">
+    Search fashion using natural language, uploaded outfit images, or your voice — powered by CLIP semantic similarity.
+  </p>
+
+  <!-- Search Widget -->
+  <div id="search-widget" role="search" aria-label="Fashion search">
+
+    <!-- Mode Tabs -->
+    <div class="search-mode-tabs" role="tablist" aria-label="Search mode">
+      <button class="search-tab active" role="tab" data-mode="text"
+              aria-selected="true" id="tab-text">✦ Text</button>
+      <button class="search-tab" role="tab" data-mode="image"
+              aria-selected="false" id="tab-image">⬆ Image</button>
+      <button class="search-tab" role="tab" data-mode="voice"
+              aria-selected="false" id="tab-voice">🎤 Voice</button>
+      <button class="search-tab" role="tab" data-mode="multimodal"
+              aria-selected="false" id="tab-multi">⊕ Combined</button>
+    </div>
+
+    <!-- Input Row -->
+    <div class="search-input-row">
+      <input
+        type="text"
+        id="search-input"
+        autocomplete="off"
+        placeholder="Describe what you're looking for…"
+        aria-label="Search query"
+        aria-describedby="tab-text"
+      />
+      <button class="icon-btn" id="voice-btn" title="Voice search" aria-label="Start voice search">🎤</button>
+      <button class="icon-btn" id="upload-btn" title="Upload image" aria-label="Upload fashion image">⬆</button>
+      <button class="icon-btn" id="search-btn" title="Search" aria-label="Search">🔍</button>
+    </div>
+
+    <!-- Image Upload Area -->
+    <div id="image-upload-area" role="region" aria-label="Image upload">
+      <p>
+        <span>Drag & drop</span> images here or <span>click to browse</span>
+      </p>
+      <p style="margin-top:8px;font-size:0.76rem">PNG, JPG, WEBP — up to 16 MB each</p>
+      <div id="image-preview-grid" role="list" aria-label="Uploaded images"></div>
+    </div>
+    <input type="file" id="file-input" accept="image/*" multiple aria-hidden="true" />
+
+    <!-- Voice Status -->
+    <div id="voice-status" role="status" aria-live="polite">
+      <div class="voice-waveform" aria-hidden="true">
+        <span></span><span></span><span></span><span></span>
+      </div>
+      <span id="voice-text">Listening…</span>
+    </div>
+
+    <!-- Search Button -->
+    <button id="search-btn" aria-label="Search fashion">
+      Search with AI
+    </button>
+
+  </div>
+</section>
+
+<!-- ── Results Section ─────────────────────────────────────── -->
+<section id="results-section" aria-label="Search results">
+  <div class="results-header">
+    <div class="results-meta">
+      <p class="eyebrow">AI Search Results</p>
+      <h2>Found <span id="result-count" class="text-accent">0</span> items for <span id="result-query"></span></h2>
+    </div>
+    <button id="back-to-all"
+      style="padding:10px 20px;border-radius:8px;border:1px solid var(--c-border);background:transparent;color:var(--c-text-muted);font-size:0.85rem;cursor:pointer;transition:all 0.15s ease"
+      onmouseover="this.style.borderColor='var(--c-accent)';this.style.color='var(--c-accent)'"
+      onmouseout="this.style.borderColor='var(--c-border)';this.style.color='var(--c-text-muted)'"
+    >← Back to Catalogue</button>
+  </div>
+
+  <!-- Filters -->
+  <div id="filters-panel" role="region" aria-label="Filter products">
+    <div class="filters-grid">
+
+      <div class="filter-group">
+        <label for="filter-category">Category</label>
+        <select id="filter-category" aria-label="Filter by category">
+          <option value="">All Categories</option>
+          <option>Men's Fashion</option>
+          <option>Women's Fashion</option>
+          <option>Footwear</option>
+          <option>Accessories</option>
+          <option>Sportswear</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-gender">Gender</label>
+        <select id="filter-gender" aria-label="Filter by gender">
+          <option value="">All</option>
+          <option>Men</option>
+          <option>Women</option>
+          <option>Unisex</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="filter-season">Season</label>
+        <select id="filter-season" aria-label="Filter by season">
+          <option value="">All Seasons</option>
+          <option>Summer</option>
+          <option>Winter</option>
+          <option>Spring</option>
+          <option>Autumn</option>
+          <option>All Season</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="price-range">Max Price</label>
+        <input type="range" id="price-range" min="500" max="25000" value="25000"
+               step="500" aria-valuemin="500" aria-valuemax="25000" />
+        <div class="range-display">
+          <span>₹500</span>
+          <span id="price-display">₹25,000</span>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label for="rating-range">Min Rating</label>
+        <input type="range" id="rating-range" min="0" max="5" value="0"
+               step="0.5" aria-valuemin="0" aria-valuemax="5" />
+        <div class="range-display">
+          <span>Any</span>
+          <span id="rating-display">0★+</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Product Grid -->
+  <div id="product-grid" role="list" aria-label="Search results"></div>
+</section>
+
+<!-- ── All Products ─────────────────────────────────────────── -->
+<section id="all-products-section" aria-label="Full product catalogue">
+  <div class="section-header">
+    <div>
+      <p class="eyebrow">Curated Collection</p>
+      <h2 class="section-title">The Catalogue</h2>
+    </div>
+  </div>
+
+  <!-- Filters (reused via JS) for catalogue -->
+  <div id="product-grid" style="display:none"></div><!-- Placeholder; real grid below -->
+  <div id="all-products-grid" role="list" aria-label="All products"></div>
+</section>
+
+<!-- ── Product Modal ────────────────────────────────────────── -->
+<div id="product-modal" role="dialog" aria-modal="true" aria-labelledby="modal-name">
+  <div class="modal-backdrop"></div>
+  <div class="modal-content">
+    <button class="modal-close" aria-label="Close product detail">✕</button>
+    <div class="modal-image" id="modal-image"></div>
+    <div class="modal-body">
+      <div id="modal-inner"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Footer ───────────────────────────────────────────────── -->
+<footer role="contentinfo">
+  <p>
+    <strong>AuraStyle</strong> — AI Fashion Discovery
+    &nbsp;·&nbsp; Powered by OpenAI CLIP &amp; MongoDB Atlas
+    &nbsp;·&nbsp; Built with Flask
+  </p>
+  <p style="margin-top:8px">
+    Search fashion with text, image, voice, or all three at once.
+  </p>
+</footer>
+
+<script src="/static/js/main.js"></script>
+</body>
+</html>
