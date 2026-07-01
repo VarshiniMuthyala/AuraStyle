@@ -130,9 +130,3 @@ MONGO_URI=mongodb+srv://<user>:<pass>@cluster0.xxx.mongodb.net/aurastyle?...
 DB_NAME=aurastyle
 PORT=5000
 ```
-
----
-
-## License
-
-MIT — built for educational demonstration purposes.
